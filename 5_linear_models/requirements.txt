@@ -1,0 +1,5 @@
+plotly
+matplotlib
+scikit-learn
+seaborn
+stqdm

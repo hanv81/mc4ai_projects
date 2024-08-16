@@ -1,0 +1,7 @@
+streamlit_drawable_canvas
+matplotlib
+tqdm
+scikit-learn
+tensorflow
+plotly
+stqdm
