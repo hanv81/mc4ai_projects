@@ -9,9 +9,9 @@ from concurrent.futures import ThreadPoolExecutor
 from streamlit_drawable_canvas import st_canvas
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense, Flatten, Input
+from keras.utils import to_categorical
+from keras.models import Sequential, load_model
+from keras.layers import Dense, Flatten, Input
 
 DS_PATH = 'dataset'
 

@@ -2,7 +2,7 @@ import numpy as np
 import streamlit as st
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
-from tensorflow.keras.models import load_model
+from keras.models import load_model
 
 def read_labels_input_shape():
     with open('labels_input_shape.txt') as f:

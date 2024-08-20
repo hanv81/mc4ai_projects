@@ -10,10 +10,10 @@ from plotly.subplots import make_subplots
 from stqdm import stqdm
 from PIL import Image
 from sklearn.model_selection import train_test_split
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.regularizers import l2
-from tensorflow.keras.models import Sequential, load_model
-from tensorflow.keras.layers import Dense, Flatten, Input, Conv2D, MaxPool2D, Activation, BatchNormalization, Dropout
+from keras.utils import to_categorical
+from keras.regularizers import l2
+from keras.models import Sequential
+from keras.layers import Dense, Flatten, Input, Conv2D, MaxPool2D, Activation, BatchNormalization, Dropout
 
 DS_PATH = 'dataset'
 l2_reg = l2(0.0001)
