@@ -48,16 +48,19 @@ def face_verify():
             bytes_data = buffer.getvalue()
             img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
             embs = DeepFace.represent(img)
+            embs = normalize(np.array([e['embedding'] for e in embs]))
             reg_embs = load_register_face_embbedings()
-            for emb in embs:
-                for name, reg_emb in reg_embs:
-                    similarity = 100 * cosine_similarity(emb['embedding'], reg_emb)
-                    if similarity >= 70:
-                        st.success(f'{name}: {round(similarity)}%')
-                        data = {'Name':[name], 'Time':[str(datetime.now())]}
-                        df = pd.DataFrame(data)
-                        df.to_csv('data.csv', index=None)
-                        break
+            registered_embs = normalize(np.array([emb for _,emb in reg_embs]))
+            registered_names = [name for name,_ in reg_embs]
+            cosine = embs @ registered_embs.T
+            for i in range(len(embs)):
+                j = cosine[i].argmax()
+                if cosine[i,j] >= .7:
+                    st.success(f'{registered_names[j]}: {round(cosine[i,j] * 100)}%')
+                    data = {'Name':[registered_names[j]], 'Time':[str(datetime.now())]}
+                    df = pd.DataFrame(data)
+                    df.to_csv('data.csv', index=None)
+
             st.write(f'Process time: {round(time.time() - t, 3)}s')
 
 @st.cache_data
@@ -65,7 +68,8 @@ def load_register_face_embbedings():
     return [(file_path[6:-4], DeepFace.represent(file_path, enforce_detection=False)[0]['embedding'])
             for file_path in glob.glob('faces/*.*')]
 
-def cosine_similarity(v1, v2):
-    return np.dot(v1,v2) / (norm(v1)*norm(v2))
+def normalize(a):
+    n = norm(a, axis=1)
+    return a / n.reshape(-1,1)
 
 main()
