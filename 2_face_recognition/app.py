@@ -49,9 +49,7 @@ def face_verify():
             img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
             embs = DeepFace.represent(img)
             embs = normalize(np.array([e['embedding'] for e in embs]))
-            reg_embs = load_register_face_embbedings()
-            registered_embs = normalize(np.array([emb for _,emb in reg_embs]))
-            registered_names = [name for name,_ in reg_embs]
+            registered_names, registered_embs = load_register_face_embbedings()
             cosine = embs @ registered_embs.T
             for i in range(len(embs)):
                 j = cosine[i].argmax()
@@ -65,8 +63,9 @@ def face_verify():
 
 @st.cache_data
 def load_register_face_embbedings():
-    return [(file_path[6:-4], DeepFace.represent(file_path, enforce_detection=False)[0]['embedding'])
-            for file_path in glob.glob('faces/*.*')]
+    names = [file_path[6:-4] for file_path in glob.glob('faces/*.*')]
+    embs = [DeepFace.represent(file_path, enforce_detection=False)[0]['embedding'] for file_path in glob.glob('faces/*.*')]
+    return names, normalize(np.array(embs))
 
 def normalize(a):
     n = norm(a, axis=1)
