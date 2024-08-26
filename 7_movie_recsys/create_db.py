@@ -50,6 +50,6 @@ def create_database():
     index = faiss.IndexFlatL2(embs.shape[1])
     index.add(embs)
     faiss.write_index(index, 'database.index')
-    df.to_csv('database.csv')
+    df.to_csv('database.csv', index=None)
 
 create_database()
