@@ -54,7 +54,7 @@ def face_search(src_imgs):
             img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
             embs = get_image_embbeddings(img)
             if embs is None:
-                st.info('Face not found')
+                st.warning('Face not found')
 
     with col2:
         img_file = st.file_uploader('🔼 Upload Image', type=['png','jpg','jpeg'])
