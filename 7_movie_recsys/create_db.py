@@ -8,17 +8,33 @@ from tqdm import tqdm
 
 processors, models = get_model('unum-cloud/uform3-image-text-english-small')
 model_image = models[Modality.IMAGE_ENCODER]
+model_text = models[Modality.TEXT_ENCODER]
 processor_image = processors[Modality.IMAGE_ENCODER]
+processor_text = processors[Modality.TEXT_ENCODER]
 data_path = 'data'
 
+def create_index(embs, filename):
+    embs = np.array(embs)
+    index = faiss.IndexFlatL2(embs.shape[1])
+    index.add(embs)
+    faiss.write_index(index, filename)
+
 def create_database():
-    embs = []
+    embs, embs_desc = [], [], []
     df = pd.DataFrame(columns = ['Frame ID', 'Name', 'Category'])
+    df_desc = pd.DataFrame(columns = ['Name', 'Category'])
     
     for category in tqdm(os.listdir(data_path)):
         path = os.path.join(data_path, category)
         # print(category, os.listdir(path))
         for movie in tqdm(os.listdir(path)):
+            df_desc.loc[df_desc.shape[0]] = [movie, category]
+            desc_path = os.path.join('data', category, movie, 'desc.txt')
+            with open(desc_path) as f:
+                desc = f.read()
+                _, embedding = model_text.encode(processor_text(desc), return_features=True)
+                embs_desc.append(embedding.flatten())
+
             movie_path = os.path.join(path, movie, 'video.mp4')
             cap = cv2.VideoCapture(movie_path)
             frame_id = 0
@@ -41,10 +57,9 @@ def create_database():
             cap.release()
             cv2.destroyAllWindows()
 
-    embs = np.array(embs)
-    index = faiss.IndexFlatL2(embs.shape[1])
-    index.add(embs)
-    faiss.write_index(index, 'database.index')
+    create_index(embs, 'database.index')
+    create_index(embs_desc, 'description.index')
     df.to_csv('database.csv', index=None)
+    df_desc.to_csv('movie.csv', index=None)
 
 create_database()
