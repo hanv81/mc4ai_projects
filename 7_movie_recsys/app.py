@@ -1,6 +1,5 @@
 import os, faiss, cv2
 import streamlit as st
-import numpy as np
 import pandas as pd
 from uform import get_model, Modality
 
@@ -21,6 +20,7 @@ def video_search(query_text):
     _, I = index.search(embedding, k)
     return df.loc[I[0]]
 
+@st.cache_data
 def text_search(query_text):
     k = 3
     _, embedding = model_text.encode(processor_text(query_text))
@@ -32,7 +32,7 @@ def main():
     
     col1, col2 = st.columns(2)
     with col1:
-        query_text = st.text_area('Text to Search')
+        query_text = st.text_area('Search Content')
     with col2:
         searchby = st.radio('Search In', options=('Video', 'Description'))
 
@@ -41,7 +41,15 @@ def main():
         for i in result.index:
             row = result.loc[i]
             name, category = row[['Name', 'Category']]
-            frame_id = row['Frame ID'] if searchby == 'Video' else 0
+            start_time = 0
+            path = os.path.join('data', category, name, 'video.mp4')
+            if searchby == 'Video':
+                frame_id = row['Frame ID']
+                cap = cv2.VideoCapture(path)
+                fps = cap.get(cv2.CAP_PROP_FPS)
+                start_time = int(frame_id/fps)
+                cap.release()
+
             col1, col2 = st.columns(2)
             with col1:
                 st.subheader(name)
@@ -49,14 +57,7 @@ def main():
                 st.image(thumb_path)
 
             with col2:
-                path = os.path.join('data', category, name, 'video.mp4')
-                cap = cv2.VideoCapture(path)
-                fps = cap.get(cv2.CAP_PROP_FPS)
-                # frame_count = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-                start_time = int(frame_id/fps)
-                cap.release()
                 st.video(path, start_time=start_time)
-
                 desc_path = os.path.join('data', category, name, 'desc.txt')
                 with open(desc_path) as f:
                     st.caption(f.read())
