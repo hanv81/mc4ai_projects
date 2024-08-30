@@ -37,6 +37,7 @@ def read_zip_file(uploaded_file):
 
     return imgs, np.array(embs)
 
+@st.cache_data
 def get_image_embbeddings(img):
     try:
         embs = DeepFace.represent(img)
