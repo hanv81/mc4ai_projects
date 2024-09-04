@@ -23,15 +23,15 @@ def read_data(n = 1000):
     labels = sorted(os.listdir(DS_PATH))
     X = None
     y = None
-    # for i in stqdm(range(len(labels))):
-    for i in range(len(labels)):
-        subfolder = os.listdir(os.path.join(DS_PATH, labels[i]))
-        imgs = [Image.open(os.path.join(DS_PATH, labels[i], file)) for file in subfolder[:n]]
+    # for i in stqdm(enumerate(labels)):
+    for i,label in enumerate(labels):
+        subfolder = os.listdir(os.path.join(DS_PATH, label))
+        imgs = [Image.open(os.path.join(DS_PATH, label, file)) for file in subfolder[:n]]
         imgs = np.stack([np.array(img, dtype=float) for img in imgs])
         X = imgs if X is None else np.concatenate((X, imgs))
         if y is None:y = [i] * len(imgs)
         else:y.extend([i] * len(imgs))
-        print(labels[i], imgs.shape)
+        print(label, imgs.shape)
     
     y = np.array(y)
     return X,y,np.array(labels)
