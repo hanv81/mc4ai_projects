@@ -69,16 +69,20 @@ def face_search(src_imgs):
     min_cosine = st.slider('Level of Similarity (%)', value=70, min_value=10, max_value=99, step=5)
 
     if embs is not None:
-        found = False
+        result = []
         for i in stqdm(range(len(src_imgs))):
             src_embs = get_image_embbeddings(np.array(src_imgs[i]))
             if src_embs is not None:
                 cosine = (src_embs @ embs.T).max()*100
                 if cosine >= min_cosine:
-                    st.image(src_imgs[i], caption=f'{round(cosine)}%')
-                    found = True
-        if not found:
+                    result.append((cosine, i))
+                    # st.image(src_imgs[i], caption=f'{round(cosine)}%')
+        if result == []:
             st.info('Not found')
+        else:
+            result.sort(reverse=True)
+            for cosine,i in result:
+                st.image(src_imgs[i], caption=f'{round(cosine)}%')
 
 def text_search(src_imgs, src_embs):
     col1, col2 = st.columns(2)
