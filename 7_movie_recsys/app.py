@@ -50,9 +50,9 @@ def main():
                 start_time = int(frame_id/fps)
                 cap.release()
 
+            st.subheader(name)
             col1, col2 = st.columns(2)
             with col1:
-                st.subheader(name)
                 thumb_path = os.path.join('data', category, name, 'thumbnail.jpg')
                 st.image(thumb_path)
 
