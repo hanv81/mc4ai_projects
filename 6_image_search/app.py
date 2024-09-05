@@ -5,7 +5,6 @@ from PIL import Image
 from uform import get_model, Modality
 from numpy.linalg import norm
 from deepface import DeepFace
-from stqdm import stqdm
 import cv2
 
 processors, models = get_model('unum-cloud/uform3-image-text-english-base')
@@ -105,9 +104,7 @@ def text_search(src_imgs, src_embs):
         if len(ids) == 0:
             st.info('Not found')
         else:
-            result = []
-            for i in ids:
-                result.append((cosine[i], i))
+            result = [(cosine[i], i) for i in ids]
             result.sort(reverse=True)
 
             j = 0
