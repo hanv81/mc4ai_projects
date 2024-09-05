@@ -90,22 +90,23 @@ def text_search(src_imgs, src_embs):
         text = st.text_area('Image Description')
     with col2:
         min_cosine = st.slider('Level of Similarity (%)', value=30, min_value=10, max_value=100, step=5)
+
     if len(text) > 0:
         text_data = processor_text(text)
         _, text_embedding = model_text.encode(text_data, return_features=True)
         text_embedding = text_embedding.flatten()/norm(text_embedding)
-        cosine = src_embs @ text_embedding
-        ids = np.where(cosine*100 >= min_cosine)[0]
-        if len(ids) > 0:
+        cosine = (src_embs @ text_embedding)*100
+        ids = np.where(cosine >= min_cosine)[0]
+        if len(ids) == 0:
+            st.info('Not found')
+        else:
             st.success('Result')
             j = 0
             cols = st.columns(3)
             for i in ids:
                 with cols[j%3]:
-                    st.image(src_imgs[i], f'{round(cosine[i] * 100)}%')
+                    st.image(src_imgs[i], f'{round(cosine[i])}%')
                 j += 1
-        else:
-            st.info('Not found')
 
 def main():
     st.set_page_config(page_title="Image Search", page_icon="🔍")
