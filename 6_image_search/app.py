@@ -100,12 +100,17 @@ def text_search(src_imgs, src_embs):
         if len(ids) == 0:
             st.info('Not found')
         else:
-            st.success('Result')
+            result = []
+            for i in ids:
+                result.append((cosine[i], i))
+
             j = 0
             cols = st.columns(3)
-            for i in ids:
+            result.sort(reverse=True)
+            st.success('Result')
+            for cosine,i in result:
                 with cols[j%3]:
-                    st.image(src_imgs[i], f'{round(cosine[i])}%')
+                    st.image(src_imgs[i], f'{round(cosine)}%')
                 j += 1
 
 def main():
