@@ -66,28 +66,32 @@ def face_search(src_imgs):
             embs = get_image_embbeddings(img)
             if embs is None:
                 st.info('Face not found')
-    min_cosine = st.slider('Minimum Cosine', value=70, min_value=10, max_value=99, step=5)
+    min_cosine = st.slider('Level of Similarity (%)', value=70, min_value=10, max_value=99, step=5)
 
     if embs is not None:
+        found = False
         for i in stqdm(range(len(src_imgs))):
             src_embs = get_image_embbeddings(np.array(src_imgs[i]))
             if src_embs is not None:
                 cosine = (src_embs @ embs.T).max()*100
                 if cosine >= min_cosine:
                     st.image(src_imgs[i], caption=f'{round(cosine)}%')
+                    found = True
+        if not found:
+            st.info('Not found')
 
 def text_search(src_imgs, src_embs):
     col1, col2 = st.columns(2)
     with col1:
         text = st.text_area('Image Description')
     with col2:
-        min_cosine = st.slider('Minimum Cosine', value=.3, min_value=.1, max_value=1., step=.05)
+        min_cosine = st.slider('Level of Similarity (%)', value=30, min_value=10, max_value=100, step=5)
     if len(text) > 0:
         text_data = processor_text(text)
         _, text_embedding = model_text.encode(text_data, return_features=True)
         text_embedding = text_embedding.flatten()/norm(text_embedding)
         cosine = src_embs @ text_embedding
-        ids = np.where(cosine >= min_cosine)[0]
+        ids = np.where(cosine*100 >= min_cosine)[0]
         if len(ids) > 0:
             st.success('Result')
             j = 0
