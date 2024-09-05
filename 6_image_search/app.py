@@ -70,7 +70,7 @@ def face_search(src_imgs):
 
     if embs is not None:
         result = []
-        for i in stqdm(range(len(src_imgs))):
+        for i in range(len(src_imgs)):
             src_embs = get_image_embbeddings(np.array(src_imgs[i]))
             if src_embs is not None:
                 cosine = (src_embs @ embs.T).max()*100
@@ -81,8 +81,13 @@ def face_search(src_imgs):
             st.info('Not found')
         else:
             result.sort(reverse=True)
+            j = 0
+            st.success('Result')
+            cols = st.columns(2)
             for cosine,i in result:
-                st.image(src_imgs[i], caption=f'{round(cosine)}%')
+                with cols[j%2]:
+                    st.image(src_imgs[i], f'{round(cosine)}%')
+                j += 1
 
 def text_search(src_imgs, src_embs):
     col1, col2 = st.columns(2)
@@ -106,8 +111,8 @@ def text_search(src_imgs, src_embs):
             result.sort(reverse=True)
 
             j = 0
-            cols = st.columns(3)
             st.success('Result')
+            cols = st.columns(3)
             for cosine,i in result:
                 with cols[j%3]:
                     st.image(src_imgs[i], f'{round(cosine)}%')
