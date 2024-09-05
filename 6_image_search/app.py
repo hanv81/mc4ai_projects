@@ -103,10 +103,10 @@ def text_search(src_imgs, src_embs):
             result = []
             for i in ids:
                 result.append((cosine[i], i))
+            result.sort(reverse=True)
 
             j = 0
             cols = st.columns(3)
-            result.sort(reverse=True)
             st.success('Result')
             for cosine,i in result:
                 with cols[j%3]:
