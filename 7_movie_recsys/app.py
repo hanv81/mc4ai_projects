@@ -6,9 +6,7 @@ from uform import get_model, Modality
 index = faiss.read_index('database.index')
 index_desc = faiss.read_index('description.index')
 processors, models = get_model('unum-cloud/uform3-image-text-english-small')
-model_image = models[Modality.IMAGE_ENCODER]
 model_text = models[Modality.TEXT_ENCODER]
-processor_image = processors[Modality.IMAGE_ENCODER]
 processor_text = processors[Modality.TEXT_ENCODER]
 df = pd.read_csv('database.csv', index_col=None)
 df_movie = pd.read_csv('movie.csv', index_col=None)
@@ -29,7 +27,10 @@ def text_search(query_text):
 
 def main():
     st.title('MOVIE RECOMMENDER SYSTEM')
-    
+
+    with st.expander('Movie Database'):
+        st.dataframe(df_movie, use_container_width=True, hide_index=True)
+
     col1, col2 = st.columns(2)
     with col1:
         query_text = st.text_area('Search Content')

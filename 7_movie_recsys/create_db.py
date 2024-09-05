@@ -20,18 +20,18 @@ def create_index(embs, filename):
     faiss.write_index(index, filename)
 
 def create_database():
-    embs, embs_desc = [], [], []
+    embs, embs_desc = [], []
     df = pd.DataFrame(columns = ['Frame ID', 'Name', 'Category'])
-    df_desc = pd.DataFrame(columns = ['Name', 'Category'])
+    df_desc = pd.DataFrame(columns = ['Name', 'Category', 'Description'])
     
     for category in tqdm(os.listdir(data_path)):
         path = os.path.join(data_path, category)
         # print(category, os.listdir(path))
         for movie in tqdm(os.listdir(path)):
-            df_desc.loc[df_desc.shape[0]] = [movie, category]
             desc_path = os.path.join('data', category, movie, 'desc.txt')
             with open(desc_path) as f:
                 desc = f.read()
+                df_desc.loc[df_desc.shape[0]] = [movie, category, desc]
                 _, embedding = model_text.encode(processor_text(desc), return_features=True)
                 embs_desc.append(embedding.flatten())
 
