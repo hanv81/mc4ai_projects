@@ -1,4 +1,4 @@
-import os, faiss, cv2
+import os, faiss, cv2, random
 import streamlit as st
 import pandas as pd
 from uform import get_model, Modality
@@ -11,6 +11,7 @@ model_text = models[Modality.TEXT_ENCODER]
 processor_text = processors[Modality.TEXT_ENCODER]
 df = pd.read_csv('database.csv', index_col=None)
 df_movie = pd.read_csv('movie.csv', index_col=None)
+colors = "#8ef", "#faa", "#afa", "#fea", "#8ef", "#afa", "#faf", '#0fe', '#2ab', '#fc2', '#cf8', '#abc', '#cab', '#bca'
 
 @st.cache_data
 def search(query_text, _index, df):
@@ -34,7 +35,8 @@ def group_similar_text(query_text, desc):
             while i < len(flag) and flag[i]:
                 phrase += desc[i] + ' '
                 i += 1
-            group.append((phrase, ''))
+            c = random.choice(colors)
+            group.append((phrase, '', c))
     return group
 
 def main():
