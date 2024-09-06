@@ -25,10 +25,9 @@ def create_database():
     df = pd.DataFrame(columns = ['Frame ID', 'Name', 'Category'])
     df_desc = pd.DataFrame(columns = ['Name', 'Category', 'Description'])
     
-    for category in tqdm(os.listdir(data_path)):
+    for category in tqdm(os.listdir(data_path), 'Total'):
         path = os.path.join(data_path, category)
-        # print(category, os.listdir(path))
-        for movie in tqdm(os.listdir(path)):
+        for movie in tqdm(os.listdir(path), f'- {category}'):
             desc_path = os.path.join('data', category, movie, 'desc.txt')
             with open(desc_path) as f:
                 desc = f.read()
@@ -38,23 +37,13 @@ def create_database():
 
             movie_path = os.path.join(path, movie, 'video.mp4')
             cap = cv2.VideoCapture(movie_path)
-            frame_id = 0
             frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            print(f'\nProcessing {movie}')
-            while cap.isOpened():
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                # cv2.imshow('frame', frame)
-
+            for i in tqdm(range(frame_count), f'  - {movie}'):
+                _, frame = cap.read()
                 image_data = processor_image(Image.fromarray(frame))
                 _, embedding = model_image.encode(image_data, return_features=True)
                 embs.append(embedding.flatten())
-                df.loc[len(df.index)] = [frame_id, movie, category]
-
-                frame_id += 1
-                if frame_id % 100 == 0:
-                    print(f'frame {frame_id}/{frame_count}')
+                df.loc[len(df.index)] = [i, movie, category]
 
             cap.release()
             cv2.destroyAllWindows()
