@@ -13,20 +13,11 @@ df = pd.read_csv('database.csv', index_col=None)
 df_movie = pd.read_csv('movie.csv', index_col=None)
 
 @st.cache_data
-def video_search(query_text):
-    k = 3
+def search(query_text, _index, df):
     _, embedding = model_text.encode(processor_text(query_text))
     faiss.normalize_L2(embedding)
-    D, I = index.search(embedding, k)
+    D, I = _index.search(embedding, k=3)
     return df.loc[I[0]], D[0]
-
-@st.cache_data
-def text_search(query_text):
-    k = 3
-    _, embedding = model_text.encode(processor_text(query_text))
-    faiss.normalize_L2(embedding)
-    D, I = index_desc.search(embedding, k)
-    return df_movie.loc[I[0]], D[0]
 
 def group_similar_text(query_text, desc):
     desc_lower = desc.lower().split()
@@ -60,7 +51,7 @@ def main():
         searchby = options.index(st.radio('Search In', options=options))
 
     if len(query_text) > 0:
-        result, D = video_search(query_text) if searchby == 0 else text_search(query_text)
+        result, D = search(query_text, index, df) if searchby == 0 else search(query_text, index_desc, df_movie)
         for i in range(len(result)):
             row = result.iloc[i]
             name, category = row[['Name', 'Category']]
@@ -90,7 +81,7 @@ def main():
                         group = group_similar_text(query_text, desc)
                         annotated_text(group)
                 st.write('\n\n')
-                st.write('Similarity:', round((1-D[i])*100), '%')
+                st.write('Similarity:', round((D[i])*100), '%')
             st.write('\n\n')
 
 main()
