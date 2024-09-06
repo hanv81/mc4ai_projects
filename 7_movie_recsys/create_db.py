@@ -15,7 +15,8 @@ data_path = 'data'
 
 def create_index(embs, filename):
     embs = np.array(embs)
-    index = faiss.IndexFlatL2(embs.shape[1])
+    faiss.normalize_L2(embs)
+    index = faiss.IndexFlatIP(embs.shape[1])
     index.add(embs)
     faiss.write_index(index, filename)
 
@@ -41,8 +42,6 @@ def create_database():
             frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             print(f'\nProcessing {movie}')
             while cap.isOpened():
-                if frame_id % 100 == 0:
-                    print(f'frame_id {frame_id}/{frame_count}')
                 ret, frame = cap.read()
                 if not ret:
                     break
@@ -52,7 +51,10 @@ def create_database():
                 _, embedding = model_image.encode(image_data, return_features=True)
                 embs.append(embedding.flatten())
                 df.loc[len(df.index)] = [frame_id, movie, category]
+
                 frame_id += 1
+                if frame_id % 100 == 0:
+                    print(f'frame {frame_id}/{frame_count}')
 
             cap.release()
             cv2.destroyAllWindows()
