@@ -28,7 +28,7 @@ def text_search(query_text):
 
 def group_similar_text(query_text, desc):
     desc_lower = desc.lower().split()
-    flag = [True if word in query_text.lower().split() else False for word in desc_lower]
+    flag = [word in query_text.lower().split() for word in desc_lower]
     group = []
     desc = desc.split()
     i = 0
