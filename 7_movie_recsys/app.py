@@ -54,16 +54,17 @@ def main():
     with col1:
         query_text = st.text_area('Search Content')
     with col2:
-        searchby = st.radio('Search In', options=('Video', 'Description'))
+        options = 'Video Frames', 'Video Description'
+        searchby = options.index(st.radio('Search In', options=options))
 
     if len(query_text) > 0:
-        result = video_search(query_text) if searchby == 'Video' else text_search(query_text)
+        result = video_search(query_text) if searchby == 0 else text_search(query_text)
         for i in result.index:
             row = result.loc[i]
             name, category = row[['Name', 'Category']]
             start_time = 0
             path = os.path.join('data', category, name, 'video.mp4')
-            if searchby == 'Video':
+            if searchby == 0:
                 frame_id = row['Frame ID']
                 cap = cv2.VideoCapture(path)
                 fps = cap.get(cv2.CAP_PROP_FPS)
@@ -81,7 +82,7 @@ def main():
                 desc_path = os.path.join('data', category, name, 'desc.txt')
                 with open(desc_path) as f:
                     desc = f.read()
-                    if searchby == 'Video':
+                    if searchby == 0:
                         st.caption(desc)
                     else:
                         group = group_similar_text(query_text, desc)
