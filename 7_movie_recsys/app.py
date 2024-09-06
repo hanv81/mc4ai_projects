@@ -2,6 +2,7 @@ import os, faiss, cv2
 import streamlit as st
 import pandas as pd
 from uform import get_model, Modality
+from annotated_text import annotated_text
 
 index = faiss.read_index('database.index')
 index_desc = faiss.read_index('description.index')
@@ -24,6 +25,24 @@ def text_search(query_text):
     _, embedding = model_text.encode(processor_text(query_text))
     _, I = index_desc.search(embedding, k)
     return df_movie.loc[I[0]]
+
+def group_similar_text(query_text, desc):
+    desc_lower = desc.lower().split()
+    flag = [True if word in query_text.lower().split() else False for word in desc_lower]
+    group = []
+    desc = desc.split()
+    i = 0
+    while i < len(flag):
+        if not flag[i]:
+            group.append(desc[i] + ' ')
+            i += 1
+        else:
+            phrase = ''
+            while i < len(flag) and flag[i]:
+                phrase += desc[i] + ' '
+                i += 1
+            group.append((phrase, ''))
+    return group
 
 def main():
     st.title('MOVIE RECOMMENDER SYSTEM')
@@ -61,7 +80,12 @@ def main():
                 st.video(path, start_time=start_time)
                 desc_path = os.path.join('data', category, name, 'desc.txt')
                 with open(desc_path) as f:
-                    st.caption(f.read())
+                    desc = f.read()
+                    if searchby == 'Video':
+                        st.caption(desc)
+                    else:
+                        group = group_similar_text(query_text, desc)
+                        annotated_text(group)
 
             st.write('\n\n')
 
