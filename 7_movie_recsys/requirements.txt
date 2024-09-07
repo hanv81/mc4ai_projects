@@ -1,0 +1,4 @@
+faiss
+pandas
+uform
+uform
