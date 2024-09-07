@@ -3,3 +3,4 @@ pandas
 uform
 st-annotated-text
 opencv-python-headless
+onnxruntime
