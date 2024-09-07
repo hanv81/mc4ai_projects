@@ -11,18 +11,21 @@ desc_index_file_path = os.path.join(ROOT, 'description.index')
 movie_df_file_path = os.path.join(ROOT, 'movie.csv')
 colors = "#8ef", "#faa", "#afa", "#fea", "#8ef", "#afa", "#faf", '#0fe', '#2ab', '#fc2', '#cf8', '#abc', '#cab', '#bca'
 
-index = faiss.read_index(db_index_file_path)
-index_desc = faiss.read_index(desc_index_file_path)
-df = pd.read_csv(db_df_file_path, index_col=None)
-df_movie = pd.read_csv(movie_df_file_path, index_col=None)
+st.cache_data
+def load_data():
+    index = faiss.read_index(db_index_file_path)
+    index_desc = faiss.read_index(desc_index_file_path)
+    df = pd.read_csv(db_df_file_path, index_col=None)
+    df_movie = pd.read_csv(movie_df_file_path, index_col=None)
 
-processors, models = get_model('unum-cloud/uform3-image-text-english-small')
-model_text = models[Modality.TEXT_ENCODER]
-processor_text = processors[Modality.TEXT_ENCODER]
+    processors, models = get_model('unum-cloud/uform3-image-text-english-small')
+    model = models[Modality.TEXT_ENCODER]
+    processor = processors[Modality.TEXT_ENCODER]
+    return index, index_desc, df, df_movie, model, processor
 
 @st.cache_data
-def search(query_text, _index, df):
-    _, embedding = model_text.encode(processor_text(query_text))
+def search(query_text, _index, _model, _processor, df):
+    _, embedding = _model.encode(_processor(query_text))
     faiss.normalize_L2(embedding)
     D, I = _index.search(embedding, k=3)
     return df.loc[I[0]], D[0]
@@ -47,6 +50,7 @@ def group_similar_text(query_text, desc):
     return group
 
 def main():
+    index, index_desc, df, df_movie, model, processor = load_data()
     st.title('MOVIE RECOMMENDER SYSTEM')
 
     with st.expander('Movie Database'):
@@ -60,7 +64,7 @@ def main():
         searchby = options.index(st.radio('Search In', options=options))
 
     if len(query_text) > 0:
-        result, D = search(query_text, index, df) if searchby == 0 else search(query_text, index_desc, df_movie)
+        result, D = search(query_text, index, model, processor, df) if searchby == 0 else search(query_text, index_desc, model, processor, df_movie)
         for i in range(len(result)):
             row = result.iloc[i]
             name, category = row[['Name', 'Category']]
