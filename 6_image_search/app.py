@@ -62,7 +62,7 @@ def face_search(src_imgs):
             img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
             embs = get_image_embbeddings(img)
             if embs is None:
-                st.warning('Face not found')
+                st.warning('Face not found', icon='⚠️')
 
     with col2:
         img_file = st.file_uploader('🔼 Upload Image', type=['png','jpg','jpeg'])
@@ -72,7 +72,7 @@ def face_search(src_imgs):
             st.image(img_file)
             embs = get_image_embbeddings(img)
             if embs is None:
-                st.info('Face not found')
+                st.warning('Face not found', icon='⚠️')
     min_cosine = st.slider('Level of Similarity (%)', value=70, min_value=10, max_value=99, step=5)
 
     if embs is not None:
@@ -87,7 +87,7 @@ def face_search(src_imgs):
                     result.append((cosine[j], i, faces[j]['facial_area']))
 
         if result == []:
-            st.info('Not found')
+            st.warning('Not found', icon='⚠️')
         else:
             result.sort(reverse=True)
             j = 0
