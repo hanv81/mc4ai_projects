@@ -13,6 +13,7 @@ model_text = models[Modality.TEXT_ENCODER]
 processor_image = processors[Modality.IMAGE_ENCODER]
 processor_text = processors[Modality.TEXT_ENCODER]
 
+@st.cache_data
 def normalize(a):
     n = norm(a, axis=1)
     return a / n.reshape(-1,1)
@@ -44,6 +45,13 @@ def get_image_embbeddings(img):
     except:
         return None
 
+@st.cache_data
+def represent_faces(img):
+    try:
+        return DeepFace.represent(img)
+    except:
+        return None
+
 def face_search(src_imgs):
     embs = None
     col1, col2 = st.columns(2)
@@ -70,12 +78,14 @@ def face_search(src_imgs):
     if embs is not None:
         result = []
         for i in range(len(src_imgs)):
-            src_embs = get_image_embbeddings(np.array(src_imgs[i]))
-            if src_embs is not None:
-                cosine = (src_embs @ embs.T).max()*100
-                if cosine >= min_cosine:
-                    result.append((cosine, i))
-                    # st.image(src_imgs[i], caption=f'{round(cosine)}%')
+            faces = represent_faces(np.array(src_imgs[i]))
+            if faces is not None:
+                src_embs = normalize(np.array([f['embedding'] for f in faces]))
+                cosine = ((src_embs @ embs.T).flatten())*100
+                if cosine.max() >= min_cosine:
+                    j = cosine.argmax()
+                    result.append((cosine[j], i, faces[j]['facial_area']))
+
         if result == []:
             st.info('Not found')
         else:
@@ -83,9 +93,12 @@ def face_search(src_imgs):
             j = 0
             st.success('Result')
             cols = st.columns(2)
-            for cosine,i in result:
+            for cosine,i,face in result:
                 with cols[j%2]:
-                    st.image(src_imgs[i], f'{round(cosine)}%')
+                    img = np.array(src_imgs[i])
+                    x,y,w,h = face['x'], face['y'], face['w'], face['h']
+                    cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 3)
+                    st.image(img, f'{round(cosine)}%')
                 j += 1
 
 def text_search(src_imgs, src_embs):
