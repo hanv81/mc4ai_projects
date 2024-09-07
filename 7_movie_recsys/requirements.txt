@@ -2,3 +2,4 @@ faiss-cpu
 pandas
 uform
 st-annotated-text
+opencv-python-headless
