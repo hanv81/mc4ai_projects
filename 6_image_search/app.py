@@ -69,10 +69,16 @@ def face_search(src_imgs):
         if img_file is not None:
             bytes_data = img_file.getvalue()
             img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-            st.image(img_file)
-            embs = get_image_embbeddings(img)
+            embs = represent_faces(img)
             if embs is None:
                 st.warning('Face not found', icon='⚠️')
+            else:
+                face = embs[0]['facial_area']
+                embs = normalize(np.array([embs[0]['embedding']]))
+                x,y,w,h = face['x'], face['y'], face['w'], face['h']
+                cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 3)
+            st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+
     min_cosine = st.slider('Level of Similarity (%)', value=70, min_value=10, max_value=99, step=5)
 
     if embs is not None:
