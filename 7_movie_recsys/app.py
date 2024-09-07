@@ -11,16 +11,17 @@ desc_index_file_path = os.path.join(ROOT, 'description.index')
 movie_df_file_path = os.path.join(ROOT, 'movie.csv')
 colors = "#8ef", "#faa", "#afa", "#fea", "#8ef", "#afa", "#faf", '#0fe', '#2ab', '#fc2', '#cf8', '#abc', '#cab', '#bca'
 
-st.cache_data
+@st.cache_resource
 def load_data():
-    index = faiss.read_index(db_index_file_path)
-    index_desc = faiss.read_index(desc_index_file_path)
-    df = pd.read_csv(db_df_file_path, index_col=None)
-    df_movie = pd.read_csv(movie_df_file_path, index_col=None)
+    with st.spinner('Loading Resource ...'):
+        index = faiss.read_index(db_index_file_path)
+        index_desc = faiss.read_index(desc_index_file_path)
+        df = pd.read_csv(db_df_file_path, index_col=None)
+        df_movie = pd.read_csv(movie_df_file_path, index_col=None)
 
-    processors, models = get_model('unum-cloud/uform3-image-text-english-small')
-    model = models[Modality.TEXT_ENCODER]
-    processor = processors[Modality.TEXT_ENCODER]
+        processors, models = get_model('unum-cloud/uform3-image-text-english-small')
+        model = models[Modality.TEXT_ENCODER]
+        processor = processors[Modality.TEXT_ENCODER]
     return index, index_desc, df, df_movie, model, processor
 
 @st.cache_data
