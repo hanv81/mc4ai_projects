@@ -1,4 +1,4 @@
-faiss
+faiss-cpu
 pandas
 uform
-uform
+annotated_text
