@@ -1,4 +1,4 @@
 faiss-cpu
 pandas
 uform
-annotated_text
+st-annotated-text
