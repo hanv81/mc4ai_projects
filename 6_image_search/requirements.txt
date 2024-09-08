@@ -3,3 +3,4 @@ deepface
 uform
 opencv-python-headless
 onnxruntime
+tensorflow
