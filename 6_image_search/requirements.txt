@@ -4,4 +4,4 @@ uform
 opencv-python-headless
 onnxruntime
 tensorflow
-keras
+tf-keras
