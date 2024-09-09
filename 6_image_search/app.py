@@ -139,7 +139,10 @@ def main():
     st.title('🖼️ Image Search')
     with st.sidebar:
         uploaded_file = st.file_uploader('Upload Images', type=['zip'])
-    if uploaded_file is not None:
+
+    if uploaded_file is None:
+        st.text('👈 Please upload your images')
+    else:
         src_imgs, src_embs = read_zip_file(uploaded_file)
 
         tab1, tab2 = st.tabs(['🙂 Face Search', '📄 Text Search'])
@@ -147,7 +150,5 @@ def main():
             face_search(src_imgs)
         with tab2:
             text_search(src_imgs, src_embs)
-    else:
-        st.text('👈 Please upload your images')
 
 main()
