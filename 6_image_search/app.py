@@ -20,20 +20,19 @@ def normalize(a):
 
 @st.cache_data
 def read_zip_file(uploaded_file):
-    with st.expander('Source Images'):
-        cols = st.columns(4)
-        with ZipFile(uploaded_file, 'r') as zip:
-            imgs, embs = [], []
-            for i, filename in enumerate(zip.namelist()):
-                if filename.endswith('png') or filename.endswith('jpg') or filename.endswith('jpeg'):
-                    with zip.open(filename) as f:
-                        img = Image.open(f)
-                        image_data = processor_image(img)
-                        _, embedding = model_image.encode(image_data, return_features=True)
-                        imgs.append(img)
-                        embs.append(embedding.flatten()/norm(embedding))
-                        with cols[i%4]:
-                            st.image(img, f'{filename[-20:-4]}')
+    cols = st.columns(4)
+    with ZipFile(uploaded_file, 'r') as zip:
+        imgs, embs = [], []
+        for i, filename in enumerate(zip.namelist()):
+            if filename.endswith('png') or filename.endswith('jpg') or filename.endswith('jpeg'):
+                with zip.open(filename) as f:
+                    img = Image.open(f)
+                    image_data = processor_image(img)
+                    _, embedding = model_image.encode(image_data, return_features=True)
+                    imgs.append(img)
+                    embs.append(embedding.flatten()/norm(embedding))
+                    with cols[i%4]:
+                        st.image(img, f'{filename[-20:-4]}')
 
     return imgs, np.array(embs)
 
@@ -143,7 +142,8 @@ def main():
     if uploaded_file is None:
         st.text('👈 Please upload your images')
     else:
-        src_imgs, src_embs = read_zip_file(uploaded_file)
+        with st.expander('Source Images'):
+            src_imgs, src_embs = read_zip_file(uploaded_file)
 
         tab1, tab2 = st.tabs(['🙂 Face Search', '📄 Text Search'])
         with tab1:
