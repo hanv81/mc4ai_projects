@@ -28,7 +28,7 @@ def read_zip_file(uploaded_file):
                 with zip.open(filename) as f:
                     img = Image.open(f)
                     image_data = processor_image(img)
-                    _, embedding = model_image.encode(image_data, return_features=True)
+                    _, embedding = model_image.encode(image_data)
                     imgs.append(img)
                     embs.append(embedding.flatten()/norm(embedding))
                     with cols[i%4]:
@@ -115,7 +115,7 @@ def text_search(src_imgs, src_embs):
 
     if len(text) > 0:
         text_data = processor_text(text)
-        _, text_embedding = model_text.encode(text_data, return_features=True)
+        _, text_embedding = model_text.encode(text_data)
         text_embedding = text_embedding.flatten()/norm(text_embedding)
         cosine = (src_embs @ text_embedding)*100
         ids = np.where(cosine >= min_cosine)[0]
