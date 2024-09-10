@@ -1,1 +1,2 @@
 deepface
+opencv-python-headless

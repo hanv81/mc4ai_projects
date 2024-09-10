@@ -1,9 +1,7 @@
+import glob, time, cv2
 import streamlit as st
 import numpy as np
 import pandas as pd
-import glob
-import time
-import cv2
 from deepface import DeepFace
 from numpy.linalg import norm
 from datetime import datetime
