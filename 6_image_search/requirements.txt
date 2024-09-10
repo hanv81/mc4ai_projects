@@ -1,6 +1,7 @@
 pillow
 deepface
 uform
+opencv-python
 opencv-python-headless
 onnxruntime
 tensorflow
