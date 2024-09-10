@@ -1,3 +1,4 @@
+import cv2
 import streamlit as st
 import numpy as np
 from zipfile import ZipFile
@@ -5,7 +6,6 @@ from PIL import Image
 from uform import get_model, Modality
 from numpy.linalg import norm
 from deepface import DeepFace
-import cv2
 
 processors, models = get_model('unum-cloud/uform3-image-text-english-base')
 model_image = models[Modality.IMAGE_ENCODER]
