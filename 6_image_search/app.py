@@ -12,6 +12,7 @@ model_image = models[Modality.IMAGE_ENCODER]
 model_text = models[Modality.TEXT_ENCODER]
 processor_image = processors[Modality.IMAGE_ENCODER]
 processor_text = processors[Modality.TEXT_ENCODER]
+models = "VGG-Face", "Facenet", "Facenet512", "OpenFace", "DeepFace", "DeepID", "ArcFace", "Dlib", "SFace", "GhostFaceNet"
 
 @st.cache_data
 def normalize(a):
@@ -37,21 +38,21 @@ def read_zip_file(uploaded_file):
     return imgs, np.array(embs)
 
 @st.cache_data
-def get_image_embbeddings(img):
+def get_image_embbeddings(img, model_name):
     try:
-        embs = DeepFace.represent(img)
+        embs = DeepFace.represent(img, model_name=model_name)
         return normalize(np.array([e['embedding'] for e in embs]))
     except:
         return None
 
 @st.cache_data
-def represent_faces(img):
+def represent_faces(img, model_name):
     try:
-        return DeepFace.represent(img)
+        return DeepFace.represent(img, model_name=model_name)
     except:
         return None
 
-def face_search(src_imgs):
+def face_search(src_imgs, model_name):
     embs = None
     col1, col2 = st.columns(2)
     with col1:
@@ -59,7 +60,7 @@ def face_search(src_imgs):
         if img_file is not None:
             bytes_data = img_file.getvalue()
             img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-            embs = get_image_embbeddings(img)
+            embs = get_image_embbeddings(img, model_name)
             if embs is None:
                 st.warning('Face not found', icon='⚠️')
 
@@ -68,7 +69,7 @@ def face_search(src_imgs):
         if img_file is not None:
             bytes_data = img_file.getvalue()
             img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
-            embs = represent_faces(img)
+            embs = represent_faces(img, model_name)
             if embs is None:
                 st.warning('Face not found', icon='⚠️')
             else:
@@ -83,7 +84,7 @@ def face_search(src_imgs):
     if embs is not None:
         result = []
         for i in range(len(src_imgs)):
-            faces = represent_faces(np.array(src_imgs[i]))
+            faces = represent_faces(np.array(src_imgs[i]), model_name)
             if faces is not None:
                 src_embs = normalize(np.array([f['embedding'] for f in faces]))
                 cosine = ((src_embs @ embs.T).flatten())*100
@@ -142,12 +143,14 @@ def main():
     if uploaded_file is None:
         st.text('👈 Please upload your images')
     else:
+        with st.sidebar:
+            model_name = st.selectbox('Select Model', options=models)
         with st.expander('Source Images'):
             src_imgs, src_embs = read_zip_file(uploaded_file)
 
         tab1, tab2 = st.tabs(['🙂 Face Search', '📄 Text Search'])
         with tab1:
-            face_search(src_imgs)
+            face_search(src_imgs, model_name)
         with tab2:
             text_search(src_imgs, src_embs)
 
