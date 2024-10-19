@@ -23,7 +23,7 @@ def bce_loss(y, y_pred):
 
 def accuracy(y, y_pred, threshold=.5):
   y_hat = [0 if i < threshold else 1 for i in y_pred]
-  return (y==y_hat).sum()/y.shape[0]
+  return (y==y_hat).mean()
 
 def feed_forward(X, w):
   return 1/(1 + np.exp(-(X@w)))
