@@ -87,7 +87,7 @@ def face_search(src_imgs, model_name):
             faces = represent_faces(np.array(src_imgs[i]), model_name)
             if faces is not None:
                 src_embs = normalize(np.array([f['embedding'] for f in faces]))
-                cosine = ((src_embs @ embs.T).flatten())*100
+                cosine = np.einsum('ij,kj->ik', src_embs, embs).flatten()*100
                 if cosine.max() >= min_cosine:
                     j = cosine.argmax()
                     result.append((cosine[j], i, faces[j]['facial_area']))
