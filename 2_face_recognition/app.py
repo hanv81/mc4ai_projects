@@ -48,7 +48,7 @@ def face_verify():
             embs = DeepFace.represent(img)
             embs = normalize(np.array([e['embedding'] for e in embs]))
             registered_names, registered_embs = load_register_face_embbedings()
-            cosine = embs @ registered_embs.T
+            cosine = np.einsum('ij,kj->ik', embs, registered_embs) # cosine = embs @ registered_embs.T
             for i in range(len(embs)):
                 j = cosine[i].argmax()
                 if cosine[i,j] >= .7:
