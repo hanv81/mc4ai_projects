@@ -73,7 +73,7 @@ def clustering(df):
     if len(features) > 0:
         X = df[features].values.copy()
         text = np.where(df['GPA'] >= 6, 'Đậu', 'Rớt')
-        kmeans = KMeans(n_clusters=n_clusters)
+        kmeans = KMeans(n_clusters=n_clusters, n_init='auto')
         kmeans.fit(X)
         y = kmeans.labels_
         centers = kmeans.cluster_centers_
@@ -179,10 +179,8 @@ def filter2(df):
     return df
 
 def clean_data(df):
-    df['BONUS'].fillna(value=0, inplace=True)
-    df['REG-MC4AI'].fillna(value='N', inplace=True)
-    for i in range(1,11):
-        df[f'S{i}'].fillna(value=0, inplace=True)
+    df.fillna({'BONUS':0, 'REG-MC4AI':'N'}, inplace=True)
+    df.fillna({f'S{i}':0 for i in range(1,11)}, inplace=True)
 
 def create_groups(df):
     def group_filter(row):
