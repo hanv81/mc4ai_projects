@@ -79,7 +79,7 @@ def clustering(df):
         centers = kmeans.cluster_centers_
         if len(features) in (2,3):
             df_cluster = df[features + ['GPA', 'NAME']].copy()
-            df_cluster['Nhóm'] = (kmeans.labels_+1).astype(str)
+            df_cluster['Nhóm'] = (y+1).astype(str)
             if len(features) == 2:
                 fig = px.scatter(df_cluster, x=features[0], y=features[1], color='Nhóm', size='GPA', hover_name='NAME')
             else:
