@@ -33,8 +33,8 @@ def face_register():
                 elif len(faces) > 1:
                     st.error('Only one face accepted')
                 else:
-                    face = np.uint8(faces[0]['face']*255)
-                    face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+                    x,y,w,h = list(faces[0]['facial_area'].values())
+                    face = img[y:y+h, x:x+w]
                     cv2.imwrite(f'faces/{name}.png', face)
                     st.success('Register Done')
 
