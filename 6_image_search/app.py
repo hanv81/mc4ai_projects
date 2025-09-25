@@ -76,27 +76,27 @@ def face_search(src_imgs, model_name):
                 for i,emb in enumerate(embs, start=1):
                     x,y,w,h = emb['facial_area'].values()
                     cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 3)
-                    cv2.putText(img, f'{i}', (x,y-5), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3)
+                    cv2.putText(img, f'{i}', (x,y-5), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3)
                 embs = normalize(np.array([e['embedding'] for e in embs]))
                 st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
     if embs is not None:
         min_cosine = st.slider('Level of Similarity (%)', value=70, min_value=10, max_value=99, step=5)
         result = []
-        for i in range(len(src_imgs)):
-            img = np.array(src_imgs[i])
+        for img in src_imgs:
+            img = np.array(img)
             faces = represent_faces(img, model_name)
             if faces is not None:
                 src_embs = normalize(np.array([f['embedding'] for f in faces]))
                 cosine = np.einsum('ij,kj->ik', src_embs, embs)*100
                 found = False
-                for j,face in enumerate(faces):
-                    if cosine[j].max() >= min_cosine:
+                for i,face in enumerate(faces):
+                    if cosine[i].max() >= min_cosine:
                         found = True
-                        k = cosine[j].argmax()
+                        j = cosine[i].argmax()
                         x,y,w,h = face['facial_area'].values()
                         cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 3)
-                        cv2.putText(img, f'{k+1}:{round(cosine[j,k])}%', (x,y-5), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3)
+                        cv2.putText(img, f'{j+1}:{round(cosine[i,j])}%', (x,y-5), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3)
                 if found:
                     result.append(img)
 
