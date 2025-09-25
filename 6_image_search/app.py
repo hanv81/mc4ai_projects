@@ -79,9 +79,8 @@ def face_search(src_imgs, model_name):
                 cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 3)
             st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
-    min_cosine = st.slider('Level of Similarity (%)', value=70, min_value=10, max_value=99, step=5)
-
     if embs is not None:
+        min_cosine = st.slider('Level of Similarity (%)', value=70, min_value=10, max_value=99, step=5)
         result = []
         for i in range(len(src_imgs)):
             faces = represent_faces(np.array(src_imgs[i]), model_name)
