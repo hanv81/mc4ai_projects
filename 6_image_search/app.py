@@ -73,38 +73,43 @@ def face_search(src_imgs, model_name):
             if embs is None:
                 st.warning('Face not found', icon='⚠️')
             else:
-                face = embs[0]['facial_area']
-                embs = normalize(np.array([embs[0]['embedding']]))
-                x,y,w,h = face['x'], face['y'], face['w'], face['h']
-                cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 3)
-            st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+                for i,emb in enumerate(embs, start=1):
+                    x,y,w,h = emb['facial_area'].values()
+                    cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 3)
+                    cv2.putText(img, f'{i}', (x,y-5), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3)
+                embs = normalize(np.array([e['embedding'] for e in embs]))
+                st.image(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
 
     if embs is not None:
         min_cosine = st.slider('Level of Similarity (%)', value=70, min_value=10, max_value=99, step=5)
         result = []
         for i in range(len(src_imgs)):
-            faces = represent_faces(np.array(src_imgs[i]), model_name)
+            img = np.array(src_imgs[i])
+            faces = represent_faces(img, model_name)
             if faces is not None:
                 src_embs = normalize(np.array([f['embedding'] for f in faces]))
-                cosine = np.einsum('ij,kj->ik', src_embs, embs).flatten()*100
-                if cosine.max() >= min_cosine:
-                    j = cosine.argmax()
-                    result.append((cosine[j], i, faces[j]['facial_area']))
+                cosine = np.einsum('ij,kj->ik', src_embs, embs)*100
+                found = False
+                for j,face in enumerate(faces):
+                    if cosine[j].max() >= min_cosine:
+                        found = True
+                        k = cosine[j].argmax()
+                        x,y,w,h = face['facial_area'].values()
+                        cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 3)
+                        cv2.putText(img, f'{k+1}:{round(cosine[j,k])}%', (x,y-5), cv2.FONT_HERSHEY_SIMPLEX, 2, (0, 0, 255), 3)
+                if found:
+                    result.append(img)
 
         if result == []:
             st.warning('Not found', icon='⚠️')
         else:
-            result.sort(reverse=True)
             j = 0
             st.success('Result')
             cols = st.columns(2)
-            for cosine,i,face in result:
-                with cols[j%2]:
-                    img = np.array(src_imgs[i])
-                    x,y,w,h = face['x'], face['y'], face['w'], face['h']
-                    cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 3)
-                    st.image(img, f'{round(cosine)}%')
-                j += 1
+            for img in result:
+                with cols[j]:
+                    st.image(img)
+                j = 1 - j
 
 def text_search(src_imgs, src_embs):
     col1, col2 = st.columns(2)
