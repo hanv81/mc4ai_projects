@@ -7,14 +7,12 @@ from plotly.subplots import make_subplots
 def mse(y, y_pred):
   return ((y-y_pred)**2).mean()
 
-def bce(y, y_pred):
-  e = .1e-10
-  return -np.mean(y*np.log(e+y_pred) + (1-y)*np.log(e+1-y_pred))
+def bce(y, logits):
+  return np.mean(y * np.log(1 + np.exp(-logits)) + (1-y) * np.log(1 + np.exp(logits)))
 
-def bce_loss(y, y_pred):
-  e = .1e-10
-  yy = np.tile(y, (y_pred.shape[0],1))
-  return (-yy*np.log(e+y_pred) - (1-yy)*np.log(e+1-y_pred)).mean(axis=1)
+def bce_loss(y, logits):
+  yy = np.tile(y, (logits.shape[0],1))
+  return np.mean(yy * np.log(1 + np.exp(-logits)) + (1-yy) * np.log(1 + np.exp(logits)), axis=1)
 
 def mse_loss(y, y_pred):
   yy = np.tile(y, (y_pred.shape[0],1))
@@ -66,7 +64,8 @@ def visualize_gd(X, y, history, loss_fn, range, num):
   ww, bb = np.meshgrid(w, b)
   wb = np.c_[ww.ravel(), bb.ravel()]
   w_, b_ = wb[:,0], wb[:,1]
-  y_pred = (1/(1 + np.exp(-(w_*X + b_)))).T
+  logits = w_*X + b_
+  y_pred = logits.T if loss_fn == 'BCE' else (1/(1 + np.exp(-logits))).T
   loss_face = bce_loss(y, y_pred) if loss_fn == 'BCE' else mse_loss(y, y_pred)
 
   weights = np.array(history['weights'])
@@ -86,8 +85,9 @@ def train(X, y, lr, epochs, loss_fn, start_point):
   X_ = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
   history = {'loss':[], 'accuracy':[], 'weights':[]}
   for _ in range(epochs):
-    y_pred = sigmoid(X_ @ w)
-    loss = bce(y, y_pred) if loss_fn == 'BCE' else mse(y, y_pred)
+    logits = X_ @ w
+    y_pred = sigmoid(logits)
+    loss = bce(y, logits) if loss_fn == 'BCE' else mse(y, y_pred)
     acc = accuracy(y, y_pred)
     history['weights'].append(w)
     history['loss'].append(loss)
@@ -96,8 +96,9 @@ def train(X, y, lr, epochs, loss_fn, start_point):
     w = back_propagation(w, dw, lr)
 
   w = history['weights'][np.argmin(history['loss'])]
-  y_pred = sigmoid(X_ @ w)
-  loss = bce(y, y_pred)
+  logits = X_ @ w
+  y_pred = sigmoid(logits)
+  loss = bce(y, logits)
   acc = accuracy(y, y_pred)
   return history
 
