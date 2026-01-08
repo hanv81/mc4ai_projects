@@ -1,9 +1,9 @@
 import time
 import streamlit as st
 import numpy as np
+import seaborn as sns
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
-import seaborn as sns
 from stqdm import stqdm
 from plotly.subplots import make_subplots
 from sklearn.metrics import classification_report
@@ -17,22 +17,21 @@ def create_dataset(n_samples):
   X = np.concatenate((x_1.reshape(-1,1), x_2.reshape(-1,1)), axis=1)
   return X, y
 
-e = .1e-10
-def bce_loss(y, y_pred):
-  return -np.mean(y*np.log(e+y_pred) + (1-y)*np.log(e+1-y_pred))
+def bce_loss(y, logits):
+  return np.mean(y * np.log(1 + np.exp(-logits)) + (1-y) * np.log(1 + np.exp(logits)))
 
 def accuracy(y, y_pred, threshold=.5):
   y_hat = [0 if i < threshold else 1 for i in y_pred]
   return (y==y_hat).mean()
 
-def feed_forward(X, w):
-  return 1/(1 + np.exp(-(X@w)))
+def sigmoid(x):
+  return 1/(1 + np.exp(-x))
 
 def gradient(X, y, y_pred):
   return (X*(y_pred-y).reshape(-1,1)).sum(axis=0)
 
 def gradient_descent(x, y, w, eta):
-  y_pred = feed_forward(x, w)
+  y_pred = sigmoid(x@w)
   w = w - eta * gradient(x, y, y_pred)
   return w, y_pred
 
@@ -45,16 +44,17 @@ def fit(X, y, ETA, EPOCHS, batch_size=0):
   history = {'loss':[], 'accuracy':[], 'weights':[]}
   X_ = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
   for i in stqdm(range(EPOCHS)):
+    logits = X_@w
     if batch_size > 0:
       index = np.random.permutation(X.shape[0])
       for i in range(X.shape[0]//batch_size):
         j = i * batch_size
         id = index[j:j+batch_size]
         w,_ = gradient_descent(X_[id], y[id], w, ETA)
-      y_pred = feed_forward(X_, w)
+      y_pred = sigmoid(logits)
     else:
       w, y_pred = gradient_descent(X_, y, w, ETA)
-    loss = bce_loss(y, y_pred)
+    loss = bce_loss(y, logits)
     acc = accuracy(y, y_pred)
     history['weights'].append(w)
     history['loss'].append(loss)
@@ -103,7 +103,7 @@ def show_report(X, y, history, threshold):
   with col1:
     w = history['weights'][-1]
     X_ = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
-    y_pred = feed_forward(X_, w)
+    y_pred = sigmoid(X_@w)
     y_pred_label = [0 if i < threshold else 1 for i in y_pred]
     cm = confusion_matrix(y, y_pred_label)
     fig = plt.figure()
@@ -149,9 +149,10 @@ def main():
       history_batch, t_batch = train(X, y, eta, epochs, batch_size)
       w = history_batch['weights'][-1]
       X_ = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
-      y_pred = feed_forward(X_, w)
-      loss = round(bce_loss(y, y_pred),4)
-      acc = round(accuracy(y, y_pred)*100,2)
+      logits = X_@w
+      y_pred = sigmoid(logits)
+      loss = round(bce_loss(y, logits), 4)
+      acc = round(accuracy(y, y_pred)*100, 2)
       st.write('Mini-batch training time:', t_batch, 'ms. Accuracy:', acc, 'Loss:', loss)
 
   show_result(X, y, history, history_batch, threshold)
