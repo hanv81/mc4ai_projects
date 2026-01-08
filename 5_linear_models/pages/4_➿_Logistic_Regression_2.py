@@ -1,7 +1,6 @@
 import traceback
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 from plotly.subplots import make_subplots
 
@@ -24,8 +23,8 @@ def mse_loss(y, y_pred):
 def accuracy(y, y_pred):
   return (np.abs(y-y_pred) <= .5).sum()/y.shape[0]
 
-def feed_forward(X, w):
-  return 1/(1 + np.exp(-(X@w)))
+def sigmoid(x):
+  return 1/(1 + np.exp(-x))
 
 def gradient(X, y, y_pred, loss_fn):
   if loss_fn == 'BCE':
@@ -87,7 +86,7 @@ def train(X, y, lr, epochs, loss_fn, start_point):
   X_ = np.concatenate((X, np.ones((X.shape[0], 1))), axis=1)
   history = {'loss':[], 'accuracy':[], 'weights':[]}
   for _ in range(epochs):
-    y_pred = feed_forward(X_, w)
+    y_pred = sigmoid(X_ @ w)
     loss = bce(y, y_pred) if loss_fn == 'BCE' else mse(y, y_pred)
     acc = accuracy(y, y_pred)
     history['weights'].append(w)
@@ -97,7 +96,7 @@ def train(X, y, lr, epochs, loss_fn, start_point):
     w = back_propagation(w, dw, lr)
 
   w = history['weights'][np.argmin(history['loss'])]
-  y_pred = feed_forward(X_, w)
+  y_pred = sigmoid(X_ @ w)
   loss = bce(y, y_pred)
   acc = accuracy(y, y_pred)
   return history
